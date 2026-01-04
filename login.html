@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SAMADHAAN | Secure Access</title>
+    <style>
+        body {
+            background-color: #050505;
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: radial-gradient(#1a1a1a 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        .login-box {
+            background: #111;
+            padding: 40px;
+            border: 1px solid #333;
+            border-top: 3px solid #ff9933; /* Saffron */
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            width: 350px;
+            text-align: center;
+        }
+        h2 { margin-bottom: 5px; letter-spacing: 2px; }
+        .subtitle { color: #888; font-size: 0.8rem; margin-bottom: 30px; }
+        input {
+            width: 90%; padding: 12px; margin: 10px 0;
+            background: #222; border: 1px solid #444; color: white;
+            outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: #ff9933; }
+        button {
+            width: 100%; padding: 12px; margin-top: 20px;
+            background: #ff9933; border: none; font-weight: bold;
+            cursor: pointer; transition: 0.3s;
+        }
+        button:hover { background: #e68a00; }
+        .error { color: #ff3333; font-size: 0.9rem; margin-top: 15px; }
+        .badge { display: inline-block; padding: 2px 8px; background: #333; color: #aaa; font-size: 0.7rem; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="badge">GOVT OF NCT DELHI</div>
+        <h2>SAMADHAAN</h2>
+        <div class="subtitle">Secure Intelligence Portal</div>
+        
+        <form method="POST">
+            <input type="text" name="username" placeholder="Officer ID (Use: admin)" required>
+            <input type="password" name="password" placeholder="Secure Key (Use: delhi2026)" required>
+            <button type="submit">AUTHENTICATE</button>
+        </form>
+        
+        {% if error %}
+            <div class="error">⚠️ {{ error }}</div>
+        {% endif %}
+    </div>
+</body>
+</html>
