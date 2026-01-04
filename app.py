@@ -2,14 +2,14 @@ import time
 import hashlib
 import json
 import random
-import locale
 import numpy as np
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, session, redirect, url_for
 from sklearn.ensemble import IsolationForest
 
 app = Flask(__name__)
+app.secret_key = 'DELHI_GOVT_SECURE_KEY_2026' # Required for Login Session
 
-# --- 1. BLOCKCHAIN SYSTEM (IMMUTABLE LEDGER) ---
+# --- 1. BLOCKCHAIN CORE ---
 class Block:
     def __init__(self, index, timestamp, data, previous_hash):
         self.index = index
@@ -27,7 +27,7 @@ class Blockchain:
         self.chain = [self.create_genesis_block()]
 
     def create_genesis_block(self):
-        return Block(0, time.time(), {"info": "SAMADHAAN GENESIS BLOCK - GOVT OF NCT DELHI"}, "0")
+        return Block(0, time.time(), {"info": "GNCTD SECURE LEDGER v4.0"}, "0")
 
     def get_latest_block(self):
         return self.chain[-1]
@@ -40,92 +40,83 @@ class Blockchain:
 
 ledger = Blockchain()
 
-# --- 2. AI MODEL (Adapted for Indian Economy) ---
-print("\n[SAMADHAAN] Initializing Neural Kernels for Govt Spending...")
+# --- 2. AI ENGINE ---
+print("⚙️ [SYSTEM] Loading Neural Networks for PWD/Jal Board...")
 rng = np.random.RandomState(42)
-
-# Training Data: Normal tenders around ₹25 Lakhs (25,00,000)
 X_train = 0.3 * rng.randn(100, 1) + 2500000 
-# Anomalies: Tenders > ₹1 Crore or extremely low
-X_train = np.r_[X_train, np.random.uniform(low=8000000, high=15000000, size=(20, 1))]
-
+X_train = np.r_[X_train, np.random.uniform(low=9000000, high=20000000, size=(20, 1))]
 clf = IsolationForest(random_state=42, contamination=0.1)
 clf.fit(X_train)
-print("[SAMADHAAN] AI Model Active. Monitoring PWD, NDMC, & Jal Board.\n")
 
-# --- 3. HELPER: Format Currency to Indian Style (Lakhs/Crores) ---
-def format_inr(amount):
-    try:
-        return "₹" + "{:,.2f}".format(float(amount))
-    except:
-        return amount
+# --- 3. ROUTES ---
 
-# --- 4. ROUTES ---
 @app.route('/')
-def home():
-    return render_template('index.html')
+def index():
+    if 'user' in session:
+        return render_template('index.html', user=session['user'])
+    return redirect(url_for('login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        # DEMO CREDENTIALS
+        if username == 'admin' and password == 'delhi2026':
+            session['user'] = 'Chief Auditor (GNCTD)'
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html', error="ACCESS DENIED: Invalid Credentials")
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('login'))
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
     data = request.json
     amount = float(data.get('amount'))
-    vendor = data.get('vendor')
-    dept = data.get('department')
     
-    # AI Prediction
-    prediction = clf.predict([[amount]])[0] 
+    # AI Logic
+    prediction = clf.predict([[amount]])[0]
     is_anomaly = prediction == -1
     
-    # Risk Logic
-    if is_anomaly:
-        status = "FLAGGED FOR AUDIT"
-        risk_score = random.randint(85, 99)
-        risk_level = "CRITICAL"
-    else:
-        status = "CLEARED"
-        risk_score = random.randint(2, 15)
-        risk_level = "SAFE"
-
-    # Simulate GST/PAN Checks
-    checks = {
-        "gst_valid": "TRUE" if risk_score < 90 else "MISMATCH",
-        "pan_linked": "TRUE",
-        "blacklist_check": "CLEAN" if risk_score < 80 else "MATCH FOUND"
-    }
-
+    risk_score = random.randint(88, 99) if is_anomaly else random.randint(1, 15)
+    status = "CRITICAL THREAT" if is_anomaly else "VERIFIED SAFE"
+    
+    # Generate random Chart Data for the frontend visualization
+    chart_data = [random.randint(20, 100) for _ in range(6)]
+    
     result = {
-        "vendor": vendor,
-        "department": dept,
-        "amount": format_inr(amount),
+        "vendor": data.get('vendor'),
+        "department": data.get('department'),
+        "amount": "₹{:,.2f}".format(amount),
         "status": status,
-        "risk_level": risk_level,
         "risk_score": risk_score,
-        "checks": checks,
-        "timestamp": time.strftime("%d-%m-%Y %H:%M:%S")
+        "chart_trend": chart_data,
+        "timestamp": time.strftime("%d-%b-%Y %H:%M:%S")
     }
 
     tx_hash = "N/A"
-    # Store in Blockchain if High Risk
     if is_anomaly:
         new_block = ledger.add_block(result)
         tx_hash = new_block.hash
     
-    return jsonify({
-        "result": result,
-        "blockchain_hash": tx_hash
-    })
+    return jsonify({"result": result, "blockchain_hash": tx_hash})
 
 @app.route('/ledger', methods=['GET'])
 def get_ledger():
-    chain_data = []
+    data = []
     for block in ledger.chain:
-        chain_data.append({
+        data.append({
             "index": block.index,
             "hash": block.hash,
             "data": block.data,
-            "timestamp": time.ctime(block.timestamp)
+            "timestamp": time.strftime("%H:%M:%S", time.localtime(block.timestamp))
         })
-    return jsonify(chain_data)
+    return jsonify(data)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
